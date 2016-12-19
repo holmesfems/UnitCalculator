@@ -12,7 +12,7 @@ Using 'make' to install:
 
     make
 
-    make install
+    sudo ./install.sh
 
 ##Usage
 A normal mathematical formulas will be recognaized as values.
