@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 PhysicsCalculator
 ====
 Calculating values with physics unit
@@ -60,3 +61,7 @@ Released under MIT license
 
 ##Author
 [holmesfems](https://github.com/holmesfems)
+=======
+# UnitCalculator
+Calculator with physical linear units
+>>>>>>> 242dc94138ad1e03d88e28fc06a4aee13c139537
