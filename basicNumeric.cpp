@@ -1377,8 +1377,10 @@ int main()
     read_history(NULL);
     int count=0;
     std::ostringstream os;
-    if(readScript("~/.basicNumericrc"))
-        readScript("consts1.py");
+    std::string homedir=getenv("HOME");
+    std::string rcdir=homedir+"/.bnrc";
+    if(readScript(rcdir))
+        readScript("consts.txt");
     while(1)
     {
         count++;
