@@ -6,6 +6,9 @@ Calculating values with physics unit
 This tool is to calculate values that with various physics
 units. Only use for your physics homework!
 
+##Download
+Please download from [Release Page](https://github.com/holmesfems/UnitCalculator/releases)
+
 ##Install
 
 Using 'make' to install:
