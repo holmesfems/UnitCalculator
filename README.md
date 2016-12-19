@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 PhysicsCalculator
 ====
 Calculating values with physics unit
@@ -8,13 +7,12 @@ This tool is to calculate values that with various physics
 units. Only use for your physics homework!
 
 ##Install
-You can use your g++ compiler as this command:
 
-    g++ basicNumeric.cpp -std=c++11 -lreadline -o basicNumeric
-
-Or using 'make' to install:
+Using 'make' to install:
 
     make
+
+    make install
 
 ##Usage
 A normal mathematical formulas will be recognaized as values.
@@ -24,13 +22,23 @@ For examples:
 
     1+2
 
-Set value of variable x as 1.0:
+Set the value of a variable:
 
     x=1.0
 
-Add a unit 't' in type of mass:
+Set the value of basic unit:
+
+    Add a unit 't' in type of mass:
 
     #setUnit t=1000 mass
+
+Gat the value an unit:
+
+    %kg
+
+Set the value of a derived unit:
+
+    %N=%kg*%m/%s^2
 
 Change the default unit to show mass:
 
@@ -39,11 +47,6 @@ Change the default unit to show mass:
 Read commands in file:
 
     #read filename
-
-Get the value of an unit 'ABC':
-
-    %ABC
-
 
 ##Requirement
 libreadline 6
