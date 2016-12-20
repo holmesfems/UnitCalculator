@@ -7,7 +7,7 @@
 #include<string>
 #include<stdlib.h>
 #include<cmath>
-#ifdef _WIN32 || _WIN64
+#if defined(WIN32)||defined(WIN64)
 #define COLOR_MAGENTA ""
 #define COLOR_NORMAL ""
 #define COLOR_RED ""
