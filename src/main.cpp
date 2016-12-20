@@ -16,17 +16,25 @@ int main()
     read_history(NULL);
     int count=0;
     std::ostringstream os;
-    std::string homedir=getenv("HOME");
-    std::string rcdir=homedir+"/.bnrc";
-    if(readScript(rcdir))
+    std::string homedir;
+    std::string rcdir;
+    char* hdcp=getenv("HOME");
+    if(hdcp==NULL)
         readScript("consts.txt");
+    else
+    {
+        homedir=hdcp;
+        rcdir=homedir+"/.bnrc";
+        if(readScript(rcdir))
+            readScript("consts.txt");
+    }
     while(1)
     {
         count++;
         char *text;
         os.str("");
         os.clear(std::stringstream::goodbit);
-        os << "\033[35;1mIn [" << count << "]:\033[0m";
+        os << COLOR_MAGENTA << "In [" << count << "]:" << COLOR_NORMAL;
         text=readline(os.str().c_str());
         if(text==NULL)
         {
@@ -34,7 +42,7 @@ int main()
             break;
         }
         cmd=text;
-        std::cout << "\033[32;1mOut[" << count<< "]:\033[0m";
+        std::cout << COLOR_GREEN << "Out[" << count<< "]:" << COLOR_NORMAL;
         if(!(seperateCmd(cmd)))
         {
             free(text);

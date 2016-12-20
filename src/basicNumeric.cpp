@@ -12,6 +12,10 @@
 #include<cmath>
 #include<fstream>
 #include<sstream>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 //#define DEBUG
 
 std::vector<std::string> strSplit(
@@ -1266,11 +1270,11 @@ int seperateCmd(std::string& cmd)
         {
             try{
                 cmd2=calculateFormat(cmd2);
-                std::cout << "\033[32;1m" << doCalculate(cmd2) << "\033[0m" << std::endl;
+                std::cout << COLOR_GREEN << doCalculate(cmd2) << COLOR_NORMAL << std::endl;
             }
             catch(const std::exception& e)
             {
-                std::cout << "\033[31;1m" << std::string(e.what()) << "\033[0m" <<std::endl;
+                std::cout << COLOR_RED << std::string(e.what()) << COLOR_NORMAL <<std::endl;
             }
             return 2;
         }
