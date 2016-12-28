@@ -58,6 +58,22 @@ regex
 
 c++11
 
+##Changelog
+
+1.2:
+
+    Add a flag to inverse the order to calculate multiplication and division
+
+    Add a command to show all commands:#help
+
+    Add a command to show all groups:#list
+
+    Fixed a bug that will save unit token to the global group
+
+1.1r1:
+
+    Fit the compile at windows by mingw++ compiler
+
 ##Licence
 Copyright (c) 2016 holmesfems
 

@@ -38,3 +38,5 @@ quantum.e=1.6021766208*10^-19*%C
 quantum.hbar=quantum.h/(2*math.pi)
 quantum.mMu=105.6583666838*1*10^6*%eV/astro.c0^2
 quantum.mE=9.1093835611*10^-31*%kg
+
+#setInverseMD true

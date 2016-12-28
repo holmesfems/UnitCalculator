@@ -63,6 +63,7 @@ PhyTypeDict* _phyTypeDict=NULL;
 
 //PhyBaseUnit
 //nothing to do
+char _inverseMD=0;
 
 //PhyBaseUnitDict
 PhyBaseUnit* PhyBaseUnitDict::searchByName(const std::string& name)
@@ -616,7 +617,7 @@ void addValueToken(const std::string& tokenName,PhyValue value)
         AnalyzeToken* newtoken=new AnalyzeToken(newtokenName,new ValueTree(value));
         _unittoken.push_back(newtoken);
     }
-    if(splcmds.size()==1||splcmds[0]=="global")
+    else if(splcmds.size()==1||splcmds[0]=="global")
     {
         //add to global
         std::string newtokenName;
@@ -1042,7 +1043,16 @@ AnalyzeTree* makeTree(std::string command)
         return new AnalyzeTree(trees,coperator);
     }
     //seperate *,/
-    std::regex md(R"((\*|/)[^\*/]*$)");
+    std::string mdstr="";
+    if(_inverseMD)
+    {
+        mdstr=R"((\*|/))";
+    }
+    else
+    {
+        mdstr=R"((\*|/)[^\*/]*$)";
+    }
+    std::regex md(mdstr);
     matches=regex_searchOne(md,cmd2);
     if(matches.size()==1)
     {
@@ -1182,6 +1192,17 @@ void setBaseUnit(std::string& unitName,std::string& typeName,double value)
     }
 }
 
+std::vector<std::string> _cmds=
+{
+    "#exit",
+    "#setUnit",
+    "#setDefault",
+    "#read",
+    "#setInverseMD",
+    "#help",
+    "#list"
+};
+
 int seperateCmd(std::string& cmd)
 {
     std::string cmd2=stringTrim(cmd);
@@ -1200,21 +1221,21 @@ int seperateCmd(std::string& cmd)
         {
             //command
             std::vector<std::string> strspl=strSplit(cmd2," ");
-            if(strspl[0]=="#exit")
+            if(strspl[0]==_cmds[0])
                 return exitThis();
-            if(strspl[0]=="#setUnit")
+            if(strspl[0]==_cmds[1])
             {
                 std::vector<std::string> strspl2=strSplit(strspl[1],"=");
                 if(strspl.size()<3)
                 {
                     std::cout << "Type of unit is missing!" << std::endl;
-                    return 7;
+                    return -2;
                 }
                 setBaseUnit(strspl2[0],strspl[2],strToDouble(strspl2[1]));
                 std::cout << "Add unit:" << strspl2[0] << " (" << strspl2[1] << " " << strspl[2] << ")" << std::endl;
-                return 3;
+                return 1;
             }
-            if(strspl[0]=="#setDefault")
+            if(strspl[0]==_cmds[2])
             {
                 std::string unitName=strspl[1];
                 std::string typeName;
@@ -1229,7 +1250,7 @@ int seperateCmd(std::string& cmd)
                     else
                     {
                         std::cout << "unit '" << unitName << "' doesn't exists\n";
-                        return 5;
+                        return -1;
                     }
                 }
                 else if(strspl.size()>2)
@@ -1242,26 +1263,113 @@ int seperateCmd(std::string& cmd)
                     if(pbud->changeDefault(unitName))
                     {
                         std::cout <<"unit '"<<unitName<<"' doesn't exists in type '"<<typeName<<"'\n";
-                        return 10;
+                        return -2;
                     }
                     std::cout << "Change default unit of " << typeName << " to: " << unitName << std::endl;
-                    return 4;
+                    return 2;
                 }
                 else
                 {
                     std::cout << "type '" << typeName <<"' doesn't exists\n";
-                    return 6;
+                    return -3;
                 }
             }
-            if(strspl[0]=="#read")
+            if(strspl[0]==_cmds[3])
             {
                 if(strspl.size()<2)
                 {
                     std::cout << "missing filename!\n";
-                    return 8;
+                    return -4;
                 }
                 readScript(strspl[1]);
-                return 9;
+                return 4;
+            }
+            if(strspl[0]==_cmds[4])
+            {
+                if(strspl.size()<2)
+                {
+                    std::cout << "missing value to set!\n";
+                    return -5;
+                }
+                if(strspl[1]=="true")
+                {
+                    _inverseMD=1;
+                    std::cout << "set InverseMD to true" << std::endl;
+                    return 5;
+                }
+                else if(strspl[1]=="false")
+                {
+                    _inverseMD=0;
+                    std::cout << "set InverseMD to false" << std::endl;
+                    return 5;
+                }
+                std::cout << "invalid value to set!" << std::endl;
+                return -5;
+            }
+            if(strspl[0]==_cmds[5])
+            {
+                std::cout << "list all commands:\n";
+                for(auto item:_cmds)
+                {
+                    std::cout << item << std::endl;
+                }
+                return 6;
+            }
+            if(strspl[0]==_cmds[6])
+            {
+                if(_analyzeTokenVectorDict.getDict().size()==0)
+                {
+                    std::cout << "no other groups!" << std::endl;
+                }
+                else if(strspl.size() == 1)
+                {
+                    std::cout << "list all groups:" << std::endl;
+                    for(auto item:_analyzeTokenVectorDict.getDict())
+                    {
+                        std::cout << item.name << std::endl;
+                    }
+                }
+                else
+                {
+                    std::cout << "list all item of group " << strspl[1] << std::endl;
+                    if(strspl[1]=="global")
+                    {
+                        for(auto item:_globaltoken)
+                        {
+                            std::cout << item->name << std::endl;
+                        }
+                    }
+                    else if(strspl[1]=="unit")
+                    {
+                        for(auto item:_unittoken)
+                        {
+                            std::cout << item->name << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        char found=0;
+                        for(auto item:_analyzeTokenVectorDict.getDict())
+                        {
+                            if(strspl[1]==item.name)
+                            {
+                                for(auto item2:item.to)
+                                {
+                                    std::cout << item2->name << std::endl;
+                                }
+                                found=1;
+                                break;
+                            }
+                        }
+                        if(!found)
+                        {
+                            std::cout << "no group names this!" << std::endl;
+                            return -7;
+                        }
+                    }
+
+                }
+                return 7;
             }
             std::cout << "invalid command:" << strspl[0] << std::endl;
             break;
