@@ -59,6 +59,13 @@ regex
 c++11
 
 ##Changelog
+1.3b:
+
+    Make it to clean up memory
+
+    Make it throw an error while calculating an unknown operator
+
+    Fixed a bug to set value of unit
 
 1.2:
 

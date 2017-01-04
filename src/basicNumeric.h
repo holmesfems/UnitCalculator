@@ -145,6 +145,7 @@ class AnalyzeTree
     public:
         AnalyzeTree(std::vector<AnalyzeTree*> contents,std::string coperator);
         AnalyzeTree(){}
+        virtual ~AnalyzeTree();
         virtual PhyValue value();
 };
 
@@ -154,6 +155,7 @@ class BasicTree:public AnalyzeTree
         std::string _content;
     public:
         BasicTree(std::string& value);
+        ~BasicTree(){};
         PhyValue value();
 };
 
@@ -163,6 +165,7 @@ class ValueTree:public AnalyzeTree
         PhyValue _content;
     public:
         ValueTree(const PhyValue& value){_content=value;}
+        ~ValueTree(){};
         PhyValue value(){return _content;}
         void changeValue(const PhyValue& value){_content=value;}
 };
@@ -188,6 +191,7 @@ class AnalyzeToken
         std::string name;
         AnalyzeTree* content;
         AnalyzeToken(){}
+        ~AnalyzeToken();
         AnalyzeToken(std::string name,AnalyzeTree* content)
         {
             this->name=name;this->content=content;

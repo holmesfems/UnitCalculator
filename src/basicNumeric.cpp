@@ -1,7 +1,7 @@
 #include"basicNumeric.h"
 #include"stdio.h"
-#include<regex>
-#include"math.h"
+#include<math.h>
+#include"regextool.h"
 #include<iostream>
 #include<string>
 #include<stdio.h>
@@ -510,6 +510,14 @@ PhyValue sin(const PhyValue& a)
     return PhyValue(std::sin(a._value));
 }
 
+//AnalyzeToken
+//destructor
+AnalyzeToken::~AnalyzeToken()
+{
+    if(content!=NULL)
+        delete content;
+}
+
 //save temporary tokens
 std::vector<AnalyzeToken*> _savetoken;
 //save global tokens
@@ -564,8 +572,8 @@ AnalyzeToken* searchToken(const std::string& name,int option=0)
         {
             for(auto item:_analyzeTokenVectorDict.getDict())
             {
-            if((result=searchTokenFromVector(name,(item.to)))!=NULL)
-                return result;
+                if((result=searchTokenFromVector(name,(item.to)))!=NULL)
+                    return result;
             }
             if((result=searchTokenFromVector(name,_unittoken))!=NULL)
             return result;
@@ -577,6 +585,10 @@ AnalyzeToken* searchToken(const std::string& name,int option=0)
         if(split[0]=="global")
         {
             return searchTokenFromVector(newname,_globaltoken);
+        }
+        else if(split[0]=="unit")
+        {
+            return searchTokenFromVector(newname,_unittoken);
         }
         else
         {
@@ -630,6 +642,18 @@ void addValueToken(const std::string& tokenName,PhyValue value)
         AnalyzeToken* newtoken=new AnalyzeToken(newtokenName,new ValueTree(value));
         _globaltoken.push_back(newtoken);
     }
+    else if(splcmds[0]=="unit")
+    {
+        //add to global
+        std::string newtokenName;
+        newtokenName=strsep(tokenName,splcmds[0].length(),1)[1];
+#ifdef DEBUG
+        std::cout << "create new token to unit:"<< newtokenName << std::endl;
+        std::cout << "value=" << value << std::endl;
+#endif
+        AnalyzeToken* newtoken=new AnalyzeToken(newtokenName,new ValueTree(value));
+        _unittoken.push_back(newtoken);
+    }
     else
     {
         std::string newtokenName;
@@ -673,6 +697,13 @@ void setTokenValue(const std::string& tokenName,PhyValue value,int option=0)
     }
 }
 
+int exitThis()
+{
+    std::cout << "exit!" << std::endl;
+    exit(0);
+    return 0;
+}
+
 //AnalyzeTree
 //constructor
 AnalyzeTree::AnalyzeTree(std::vector<AnalyzeTree*> contents,std::string coperator)
@@ -681,11 +712,14 @@ AnalyzeTree::AnalyzeTree(std::vector<AnalyzeTree*> contents,std::string coperato
     _coperator=coperator;
 }
 
-int exitThis()
+//destructor
+AnalyzeTree::~AnalyzeTree()
 {
-    std::cout << "exit!" << std::endl;
-    exit(0);
-    return 0;
+    for(auto item:_contents)
+    {
+        if(item!=NULL)
+            delete item;
+    }
 }
 
 //return the calculating value of the tree
@@ -746,6 +780,7 @@ PhyValue AnalyzeTree::value()
     {
         return exitThis();
     }
+    throw(compileException("Unknown operator:"+_coperator));
     return PhyValue(0.0);
 }
 
@@ -771,45 +806,6 @@ PhyValue BasicTree::value()
     return PhyValue(strToDouble(_content));
 }
 
-//search all matches by regex explaination
-std::vector<std::smatch*> regex_searchAll(
-        std::regex &regex,
-        std::string &target)
-{
-    std::smatch* match;
-    std::vector<std::smatch*> result;
-    for(auto it=target.cbegin();
-            match=new std::smatch,
-            std::regex_search(it,target.cend(),*match,regex);
-            it+=match->position(0)+match->length(0)
-       )
-    {
-        result.push_back(match);
-    }
-#ifdef DEBUG
-    std::cout << "hit " << result.size() << " items" << std::endl;
-#endif
-    return result;
-}
-
-//search first match
-std::vector<std::smatch*> regex_searchOne(
-        std::regex &regex,
-        std::string &target)
-{
-    std::smatch *match;
-    std::vector<std::smatch*> result;
-    for(auto it=target.cbegin();
-            match = new std::smatch,
-            std::regex_search(it,target.cend(),*match,regex);
-            it+=match->position(0)+match->length(0)
-       )
-    {
-        result.push_back(match);
-        break;
-    }
-    return result;
-}
 /*
 //search last match
 std::vector<std::smatch*> regex_searchLast(
@@ -870,11 +866,11 @@ std::string headRear(std::string str)
     return os.str();
 }
 
-AnalyzeTree* makeTree(std::string command)
+AnalyzeTree* makeTree(std::string command,char blankErr=0)
 {
     // check if it is a basic tree
     std::string cmd2=command;
-    if(cmd2=="")
+    if(cmd2=="" && !blankErr)
         return new ValueTree(PhyValue(0.0));
 #ifdef DEBUG
     std::cout << "command:" << cmd2 << std::endl;
@@ -964,6 +960,7 @@ AnalyzeTree* makeTree(std::string command)
             +newname;
         iter+=matches[i]->position(0)+matches[i]->length(0);
     }
+    clearSmatch(matches);
     if(i>0)
     {
         newcmd+=cmd2.substr(iter,cmd2.length()-iter);
@@ -978,6 +975,7 @@ AnalyzeTree* makeTree(std::string command)
     if(matcheq.size()==1)
     {
         std::vector<std::string> cmds=strsep(cmd2,matcheq[0]->position(),matcheq[0]->length());
+        clearSmatch(matcheq);
         if(std::regex_match(cmds[0],token))
         {
             std::vector<AnalyzeTree*> trees;
@@ -1017,13 +1015,18 @@ AnalyzeTree* makeTree(std::string command)
             std::cout << "to match:" << sep[1] << std::endl;
 #endif
             std::vector<std::smatch*> match2=regex_searchOne(soelement,sep[1]);
-            if(match2.size()!=1) return NULL;
+            if(match2.size()!=1)
+            {
+                clearSmatch(match2);
+                clearSmatch(matches);
+                return NULL;
+            }
 #ifdef DEBUG
             std::cout << "match succeed:" << match2[0]->str() << std::endl;
 #endif
             std::ostringstream newcmd;
             std::ostringstream newname;
-            trees.push_back(makeTree(match2[0]->str()));
+            trees.push_back(makeTree(match2[0]->str(),1));
             newname << "$X" << _savetoken.size();
 #ifdef DEBUG
             std::cout << "newname is:" << newname.str() << std::endl;
@@ -1035,13 +1038,17 @@ AnalyzeTree* makeTree(std::string command)
 #ifdef DEBUG
             std::cout << "new command:" << newcmd.str() << std::endl;
 #endif
+            clearSmatch(match2);
+            clearSmatch(matches);
             return makeTree(newcmd.str());
         }
         trees.push_back(makeTree(sep[0]));
         trees.push_back(makeTree(sep[1]));
         std::string coperator=matches[0]->str().substr(0,1);
+        clearSmatch(matches);
         return new AnalyzeTree(trees,coperator);
     }
+    clearSmatch(matches);
     //seperate *,/
     std::string mdstr="";
     if(_inverseMD)
@@ -1058,11 +1065,13 @@ AnalyzeTree* makeTree(std::string command)
     {
         std::vector<AnalyzeTree*> trees;
         std::vector<std::string> sep=strsep(cmd2,matches[0]->position(0),1);
-        trees.push_back(makeTree(sep[0]));
-        trees.push_back(makeTree(sep[1]));
+        trees.push_back(makeTree(sep[0],1));
+        trees.push_back(makeTree(sep[1],1));
         std::string coperator=matches[0]->str().substr(0,1);
+        clearSmatch(matches);
         return new AnalyzeTree(trees,coperator);
     }
+    clearSmatch(matches);
     //seperate ^
     std::regex pw(R"(\^)");
     matches=regex_searchOne(pw,cmd2);
@@ -1073,15 +1082,24 @@ AnalyzeTree* makeTree(std::string command)
         trees.push_back(makeTree(sep[0]));
         trees.push_back(makeTree(sep[1]));
         std::string coperator=matches[0]->str();
+        clearSmatch(matches);
         return new AnalyzeTree(trees,coperator);
     }
+    clearSmatch(matches);
     throw compileException("compile Error");
     return NULL;
 }
 
 PhyValue doCalculate(std::string cmd)
 {
+    /*
+    for(auto item:_savetoken)
+    {
+        if(item!=NULL)
+            delete item;
+    }*/
     _savetoken.clear();
+    _savetoken.shrink_to_fit();
     PhyValue result;
     AnalyzeTree* root=makeTree(cmd);
 //    if(root==NULL)
@@ -1112,16 +1130,19 @@ std::string calculateFormat(std::string cmd)
     std::string res=deleteSpace(cmd);
     std::regex fix3(R"(([^A-Za-z0-9]|^)\.)");
     int iter=0;
-    for(std::smatch* item:regex_searchAll(fix3,res))
+    std::vector<std::smatch*> fix3match=regex_searchAll(fix3,res);
+    for(auto item:fix3match)
     {
         iter+=item->position();
         res.insert(iter+item->length()-1,"0");
         iter+=item->length()+1;
     }
+    clearSmatch(fix3match);
     std::regex fix1(R"((([^\.A-Za-z0-9]|(^|-))(\d+(\.\d+)?)((\$|%)?[A-Za-z][A-Za-z0-9]*)))");
     std::regex numeric(R"(\d+(\.\d+)?)");
     iter=0;
-    for(std::smatch* item:regex_searchAll(fix1,res))
+    std::vector<std::smatch*> fix1match=regex_searchAll(fix1,res);
+    for(auto item:fix1match)
     {
         iter+=item->position();
         std::vector<std::smatch*> matches;
@@ -1131,14 +1152,17 @@ std::string calculateFormat(std::string cmd)
         res.insert(iter+matches[0]->length()+matches[0]->position(),"*");
         iter+=item->length()+1;
     }
+    clearSmatch(fix1match);
     std::regex fix2(R"(\)[\$%A-Za-z0-9\(])");
     iter=0;
-    for(std::smatch* item:regex_searchAll(fix2,res))
+    std::vector<std::smatch*> fix2match=regex_searchAll(fix2,res);
+    for(auto item:fix2match)
     {
         iter+=item->position();
         res.insert(iter+1,"*");
         iter+=item->length()+1;
     }
+    clearSmatch(fix2match);
     return res;
 }
 
@@ -1281,7 +1305,10 @@ int seperateCmd(std::string& cmd)
                     std::cout << "missing filename!\n";
                     return -4;
                 }
-                readScript(strspl[1]);
+                if(readScript(strspl[1]))
+                {
+                    std::cout << "no file names \"" + strspl[1] + "\"" << std::endl;
+                }
                 return 4;
             }
             if(strspl[0]==_cmds[4])
@@ -1394,7 +1421,7 @@ int readScript(std::string filename)
 {
     std::ifstream ifs(filename);
     std::string line;
-    if(ifs)
+    if(ifs.is_open())
     {
         while(std::getline(ifs,line))
         {
