@@ -776,6 +776,10 @@ PhyValue AnalyzeTree::value()
         return pow(_contents[0]->value(),_contents[1]->value());
     if(_coperator=="pi")  //function
         return PhyValue(M_PI);
+    if(_coperator=="value")  //function
+        return _contents[0]->value().phyVal_unitNumeric();
+    if(_coperator=="unit")  //function
+        return _contents[0]->value().phyVal_unit();
     if(_coperator=="exit") //exit
     {
         return exitThis();
@@ -1363,14 +1367,14 @@ int seperateCmd(std::string& cmd)
                     {
                         for(auto item:_globaltoken)
                         {
-                            std::cout << item->name << std::endl;
+                            std::cout << item->name << "\t=\t" << item->content->value() << std::endl;
                         }
                     }
                     else if(strspl[1]=="unit")
                     {
                         for(auto item:_unittoken)
                         {
-                            std::cout << item->name << std::endl;
+                            std::cout << item->name << "\t=\t" << item->content->value() << std::endl;
                         }
                     }
                     else
@@ -1382,7 +1386,7 @@ int seperateCmd(std::string& cmd)
                             {
                                 for(auto item2:item.to)
                                 {
-                                    std::cout << item2->name << std::endl;
+                                    std::cout << item2->name << "\t=\t" << item2->content->value() << std::endl;
                                 }
                                 found=1;
                                 break;

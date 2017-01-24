@@ -132,6 +132,8 @@ class PhyValue
         PhyValue inverse() const;
         PhyValue operator/(const PhyValue& a) const{return (*this)*(a.inverse());}
         PhyValue operator=(const PhyValue& a){_unit=a._unit;_value=a._value;return PhyValue(*this);}
+        inline PhyValue phyVal_unit(){return (*this)/(this->getUnitValue());}
+        inline PhyValue phyVal_unitNumeric(){return (*this)/(this->phyVal_unit());}
         friend PhyValue pow(const PhyValue& a,const PhyValue& b);
         friend PhyValue sin(const PhyValue& a);
         friend std::ostream& operator<<(std::ostream &os,const PhyValue &a){return os<<a.str();}
@@ -182,6 +184,8 @@ class compileException:public std::invalid_argument
 std::vector<std::string> strSplit(const std::string& s,const std::string& delim);
 
 std::vector<std::string> strsep(std::string str,int locate,int length);
+
+PhyValue pow(const PhyValue& a,const PhyValue& b);
 
 PhyValue sin(const PhyValue& a);
 

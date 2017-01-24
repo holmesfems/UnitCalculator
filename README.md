@@ -59,6 +59,14 @@ regex
 c++11
 
 ##Changelog
+1.4:
+
+    Improved #list command
+
+    Added new function value(x):get the showing value of x
+
+    Added new function unit(x):get the unit of x
+
 1.3b:
 
     Make it to clean up memory
