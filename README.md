@@ -59,6 +59,14 @@ regex
 c++11
 
 ##Changelog
+1.6:
+
+    Modified codes
+
+1.5:
+
+    Improved #setUnit command:can use calculation express
+
 1.4:
 
     Improved #list command

@@ -7,6 +7,7 @@
 #include<readline/history.h>
 #include<stdlib.h>
 #include<sstream>
+using namespace BasicNumeric;
 
 int main()
 {
