@@ -120,7 +120,7 @@ namespace BasicNumeric
                 _value=value;_unit=unit;
             }
             PhyValue(const PhyValue& a){_value=a._value;_unit=a._unit;}
-            double getValue()const{return _value;}
+            inline double getValue()const{return _value;}
             double getUnitValue() const;
             std::string str() const;
             unsigned char isNumeric()const{return _unit.isNumeric();}
