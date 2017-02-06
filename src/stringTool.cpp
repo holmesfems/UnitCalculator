@@ -1,4 +1,5 @@
 #include "stringTool.h"
+#include <sstream>
 //#define DEBUG
 namespace StringTool
 {
@@ -28,7 +29,7 @@ namespace StringTool
         return result;
     }
 
-    std::vector<std::string> strsep(std::string str,int locate,int length)
+    std::vector<std::string> strsep(const std::string &str,int locate,int length)
     {
     #ifdef DEBUG
         std::cout << "calling strsep(" << str << "," << locate << "," << length << ")" << std::endl;
@@ -40,5 +41,23 @@ namespace StringTool
         std::cout <<"result:" << result[0] << " | " << result[1] << std::endl;
     #endif
         return result;
+    }
+
+    double convertToDouble(const std::string &str)
+    {
+        std::istringstream iss;
+        iss.str(str);
+        double res;
+        iss >> res;
+        return res;
+    }
+
+    int convertToInt(const std::string &str)
+    {
+        std::istringstream iss;
+        iss.str(str);
+        int res;
+        iss >> res;
+        return res;
     }
 }
