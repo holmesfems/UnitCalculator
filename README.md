@@ -41,40 +41,40 @@ After installation, you should `cp consts.txt ~/.bnrc`
 A normal mathematical formulas will be recognaized as values.
 For examples:
 
-1 plus 2:
+* 1 plus 2:
 
-    1+2
+`1+2`
 
-Set the value of a variable:
+* Set the value of a variable:
 
-    x=1.0
+`x=1.0`
 
-Set the value of basic unit:
+* Set the value of basic unit:
 
-    Add a unit 't' in type of mass:
+Add a unit 't' in type of mass:
 
-    #setUnit t=1000 mass
+`#setUnit t=1000 mass`
 
-Gat the value an unit:
+* Get the value an unit:
 
-    %kg
+`%kg`
 
-Set the value of a derived unit:
+* Set the value of a derived unit:
 
-    %N=%kg*%m/%s^2
+`%N=%kg*%m/%s^2`
 
-Change the default unit to show mass:
+* Change the default unit to show mass:
 
-    #setDefault t mass
+`#setDefault t mass`
 
-Read commands in file:
+* Read commands in file:
 
-    #read filename
+`#read filename`
 
 ##Changelog
 * 1.7:
 
-Modified install method,thanks to [jerryjia](https://github.com/jerryjiahaha)
+    Modified install method,thanks to [jerryjia](https://github.com/jerryjiahaha)
 
 * 1.6:
 
