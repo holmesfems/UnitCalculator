@@ -25,15 +25,20 @@ LFLAGS   = -Wall -I. -lm -lreadline
 SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
+INSTALL_PREFIX = /usr/local/bin/
 
 SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 rm       = rm -f
 
-$(BINDIR)/$(TARGET): $(OBJECTS)
+$(BINDIR)/$(TARGET): $(OBJDIR) $(OBJECTS)
 	$(LINKER) $@ $(LFLAGS) $(OBJECTS)
 	@echo "Linking complete!"
+
+$(OBJDIR):
+	@echo "Creating output dir"
+	mkdir $(OBJDIR) $(BINDIR)
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -48,3 +53,11 @@ clean:
 remove: clean
 	$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
+
+.PHONY: install
+install:
+	install -m755 -D bin/$(TARGET) $(INSTALL_PREFIX)/$(TARGET)
+
+.PHONY: uninstall
+uninstall:
+	rm $(INSTALL_PREFIX)/$(TARGET)

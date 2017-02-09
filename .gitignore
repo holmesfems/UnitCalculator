@@ -27,3 +27,8 @@
 *.exe
 *.out
 *.app
+
+# Local output
+bin/*
+obj/*
+build*/*
