@@ -38,6 +38,9 @@ sudo make install
 After installation, you should `cp consts.txt ~/.bnrc`
 
 ##Usage
+To start up this program,just type `basicNumeric` in your shell
+after you install it.
+
 A normal mathematical formulas will be recognaized as values.
 For examples:
 
