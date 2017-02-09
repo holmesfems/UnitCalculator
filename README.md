@@ -12,7 +12,7 @@ Please download from [Release Page](https://github.com/holmesfems/UnitCalculator
 * libreadline
 * c++11 (for regex support)
 * cmake (optional, if you want to build with cmake)
-* 
+
 
 ##Installation
 Here are two methods: Calling `make` directly or using [cmake](https://cmake.org/runningcmake/).
@@ -72,6 +72,10 @@ Read commands in file:
     #read filename
 
 ##Changelog
+1.7:
+
+    Modified install method,thanks to [jerryjia](https://github.com/jerryjiahaha)
+
 1.6:
 
     Modified codes

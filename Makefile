@@ -25,7 +25,7 @@ LFLAGS   = -Wall -I. -lm -lreadline
 SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
-INSTALL_PREFIX = /usr/local/bin/
+INSTALL_PREFIX = /usr/local/bin
 
 SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
