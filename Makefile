@@ -32,9 +32,13 @@ INCLUDES := $(wildcard $(SRCDIR)/*.h)
 OBJECTS  := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 rm       = rm -f
 
-$(BINDIR)/$(TARGET): $(OBJECTS)
+$(BINDIR)/$(TARGET): $(OBJDIR) $(OBJECTS)
 	$(LINKER) $@ $(LFLAGS) $(OBJECTS)
 	@echo "Linking complete!"
+
+$(OBJDIR):
+	@echo "Creating output dir"
+	mkdir $(OBJDIR) $(BINDIR)
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
