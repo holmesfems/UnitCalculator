@@ -72,19 +72,19 @@ Read commands in file:
     #read filename
 
 ##Changelog
-1.7:
+* 1.7:
 
-    Modified install method,thanks to [jerryjia](https://github.com/jerryjiahaha)
+Modified install method,thanks to [jerryjia](https://github.com/jerryjiahaha)
 
-1.6:
+* 1.6:
 
     Modified codes
 
-1.5:
+* 1.5:
 
     Improved #setUnit command:can use calculation express
 
-1.4:
+* 1.4:
 
     Improved #list command
 
@@ -92,7 +92,7 @@ Read commands in file:
 
     Added new function unit(x):get the unit of x
 
-1.3b:
+* 1.3b:
 
     Make it to clean up memory
 
@@ -100,7 +100,7 @@ Read commands in file:
 
     Fixed a bug to set value of unit
 
-1.2:
+* 1.2:
 
     Add a flag to inverse the order to calculate multiplication and division
 
@@ -110,7 +110,7 @@ Read commands in file:
 
     Fixed a bug that will save unit token to the global group
 
-1.1r1:
+* 1.1r1:
 
     Fit the compile at windows by mingw++ compiler
 
