@@ -3,19 +3,39 @@ PhysicsCalculator
 Calculating values with physics unit
 
 ##Description
-This tool is to calculate values that with various physics
-units. Only use for your physics homework!
+This tool is to calculate values that with various physics units. Enjoy your physics homework with it!
 
 ##Download
 Please download from [Release Page](https://github.com/holmesfems/UnitCalculator/releases)
 
-##Install
+##Requirement
+* libreadline
+* c++11 (for regex support)
+* cmake (optional, if you want to build with cmake)
+* 
 
-Using 'make' to install:
+##Installation
+Here are two methods: Calling `make` directly or using [cmake](https://cmake.org/runningcmake/).
 
-    make
+Note that we prefer using clang++ than g++
 
-    sudo ./install.sh
+Method 1 - Using 'make':
+
+```sh
+make
+sudo make install
+```
+
+Method 2 - Using cmake:
+
+```sh
+mkdir build && cd build
+cmake -D CMAKE_CXX_COMPILER="/usr/bin/clang++" ..
+make
+sudo make install
+```
+
+After installation, you should `cp consts.txt ~/.bnrc`
 
 ##Usage
 A normal mathematical formulas will be recognaized as values.
@@ -50,13 +70,6 @@ Change the default unit to show mass:
 Read commands in file:
 
     #read filename
-
-##Requirement
-libreadline 6
-
-regex
-
-c++11
 
 ##Changelog
 1.6:
@@ -98,7 +111,7 @@ c++11
     Fit the compile at windows by mingw++ compiler
 
 ##Licence
-Copyright (c) 2016 holmesfems
+Copyright (c) 2016-2017 holmesfems
 
 Released under MIT license
 

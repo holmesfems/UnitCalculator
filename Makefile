@@ -25,6 +25,7 @@ LFLAGS   = -Wall -I. -lm -lreadline
 SRCDIR   = src
 OBJDIR   = obj
 BINDIR   = bin
+INSTALL_PREFIX = /usr/local/bin/
 
 SOURCES  := $(wildcard $(SRCDIR)/*.cpp)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
@@ -48,3 +49,11 @@ clean:
 remove: clean
 	$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
+
+.PHONY: install
+install:
+	install -m755 -D bin/$(TARGET) $(INSTALL_PREFIX)/$(TARGET)
+
+.PHONY: uninstall
+uninstall:
+	rm $(INSTALL_PREFIX)/$(TARGET)
