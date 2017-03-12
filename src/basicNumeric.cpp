@@ -528,6 +528,10 @@ namespace BasicNumeric
 
     AnalyzeTokenVectorDict _analyzeTokenVectorDict;
 
+    DefinedFunctionDict _definedFunctionDict;
+
+    std::vector<std::string> _firstSearchStack;
+
     //search a token from a specific vector
     AnalyzeToken* searchTokenFromVector(const std::string& name,std::vector<AnalyzeToken*>& tokenvector)
     {
@@ -565,6 +569,16 @@ namespace BasicNumeric
         std::vector<std::string> split=strSplit(name,".");
         if(split.size()==1)
         {
+            if(_firstSearchStack.size()>0)
+            {
+                int tokenvec;
+                tokenvec=_analyzeTokenVectorDict.searchVector(_firstSearchStack.back());
+                if(tokenvec >= 0)
+                {
+                    if((result=searchTokenFromVector(name,_analyzeTokenVectorDict.getDict()[tokenvec].to))!=NULL)
+                        return result;
+                }
+            }
             if((result=searchTokenFromVector(name,_globaltoken))!=NULL)
                 return result;
             if((result=searchTokenFromVector(name,_savetoken))!=NULL)
@@ -785,6 +799,16 @@ namespace BasicNumeric
         {
             return exitThis();
         }
+        DefinedFunction* df;
+        if((df=_definedFunctionDict.searchByName(_coperator))!=NULL)
+        {
+            std::vector<PhyValue> variables;
+            for(auto item : _contents)
+            {
+                variables.push_back(item->value());
+            }
+            return df->doFunc(variables);
+        }
         throw(compileException("Unknown operator:"+_coperator));
         return PhyValue(0.0);
     }
@@ -952,7 +976,8 @@ namespace BasicNumeric
                     for(auto item : strSplit(splitCmds[1].substr(0,splitCmds[1].length()-1),","))
                     {
                         //std::cout << "push:" << item << std::endl;
-                        trees.push_back(makeTree(item));
+                        if(item!="")
+                            trees.push_back(makeTree(item));
                     }
                     newTree=new AnalyzeTree(trees,splitCmds[0]);
                 }
@@ -1238,6 +1263,12 @@ namespace BasicNumeric
         }
     }
 
+    DefinedFunction::DefinedFunction(const std::string &name,std::vector<std::string> variables)
+    {
+        _name=name;
+        _variables=variables;
+    }
+
     std::vector<std::string> _cmds=
     {
         "#exit",
@@ -1246,16 +1277,47 @@ namespace BasicNumeric
         "#read",
         "#setInverseMD",
         "#help",
-        "#list"
+        "#list",
+        "#judge",
+        "#compare",
     };
 
-    int seperateCmd(std::string& cmd)
+    std::vector<std::string> _controls=
+    {
+        "#defFunc",
+        "#enddefFunc"
+    };
+
+    char _defFuncFlag=0;
+    int _defFuncIndex=0;
+
+    int seperateCmd(std::string& cmd,std::ostream& os)
     {
         std::string cmd2=stringTrim(cmd);
         if(cmd2=="\n"||cmd2=="")
         {
-            std::cout << "blank!\n";
+            os << "blank!\n";
             return 1;
+        }
+        if(_defFuncFlag)
+        {
+            std::vector<std::string> strspl=strSplit(cmd2," ");
+            if(strspl[0]==_controls[1])
+            {
+                _defFuncFlag=0;
+                os << "Exit function " << _definedFunctionDict.searchByIndex(_defFuncIndex)->getName() << std::endl;
+            }
+            else if(strspl[0]==_controls[0])
+            {
+                os << "Can't use " << _controls[0] << " while defining a function" << std::endl;
+                return -11;
+            }
+            else
+            {
+                _definedFunctionDict.searchByIndex(_defFuncIndex)->pushCmd(cmd2);
+                os << "Writing function " << _definedFunctionDict.searchByIndex(_defFuncIndex)->getName() << std::endl;
+            }
+            return 11;
         }
         switch(cmd2.c_str()[0])
         {
@@ -1275,11 +1337,11 @@ namespace BasicNumeric
                     std::vector<std::string> strspl2=strSplit(strspl[1],"=");
                     if(strspl.size()<3)
                     {
-                        std::cout << "Type of unit is missing!" << std::endl;
+                        os << "Type of unit is missing!" << std::endl;
                         return -2;
                     }
                     setBaseUnit(strspl2[0],strspl[2],doCalculate(strspl2[1]).getValue());
-                    std::cout << "Add unit:" << strspl2[0] << " (" << strspl2[1] << " " << strspl[2] << ")" << std::endl;
+                    os << "Add unit:" << strspl2[0] << " (" << strspl2[1] << " " << strspl[2] << ")" << std::endl;
                     return 1;
                 }
                 if(strspl[0]==_cmds[2])
@@ -1296,7 +1358,7 @@ namespace BasicNumeric
                         }
                         else
                         {
-                            std::cout << "unit '" << unitName << "' doesn't exists\n";
+                            os << "unit '" << unitName << "' doesn't exists\n";
                             return -1;
                         }
                     }
@@ -1309,15 +1371,15 @@ namespace BasicNumeric
                     {
                         if(pbud->changeDefault(unitName))
                         {
-                            std::cout <<"unit '"<<unitName<<"' doesn't exists in type '"<<typeName<<"'\n";
+                            os <<"unit '"<<unitName<<"' doesn't exists in type '"<<typeName<<"'\n";
                             return -2;
                         }
-                        std::cout << "Change default unit of " << typeName << " to: " << unitName << std::endl;
+                        os << "Change default unit of " << typeName << " to: " << unitName << std::endl;
                         return 2;
                     }
                     else
                     {
-                        std::cout << "type '" << typeName <<"' doesn't exists\n";
+                        os << "type '" << typeName <<"' doesn't exists\n";
                         return -3;
                     }
                 }
@@ -1325,12 +1387,12 @@ namespace BasicNumeric
                 {
                     if(strspl.size()<2)
                     {
-                        std::cout << "missing filename!\n";
+                        os << "missing filename!\n";
                         return -4;
                     }
                     if(readScript(strspl[1]))
                     {
-                        std::cout << "no file names \"" + strspl[1] + "\"" << std::endl;
+                        os << "no file names \"" + strspl[1] + "\"" << std::endl;
                     }
                     return 4;
                 }
@@ -1338,30 +1400,30 @@ namespace BasicNumeric
                 {
                     if(strspl.size()<2)
                     {
-                        std::cout << "missing value to set!\n";
+                        os << "missing value to set!\n";
                         return -5;
                     }
                     if(strspl[1]=="true")
                     {
                         _inverseMD=1;
-                        std::cout << "set InverseMD to true" << std::endl;
+                        os << "set InverseMD to true" << std::endl;
                         return 5;
                     }
                     else if(strspl[1]=="false")
                     {
                         _inverseMD=0;
-                        std::cout << "set InverseMD to false" << std::endl;
+                        os << "set InverseMD to false" << std::endl;
                         return 5;
                     }
-                    std::cout << "invalid value to set!" << std::endl;
+                    os << "invalid value to set!" << std::endl;
                     return -5;
                 }
                 if(strspl[0]==_cmds[5])
                 {
-                    std::cout << "list all commands:\n";
+                    os << "list all commands:\n";
                     for(auto item:_cmds)
                     {
-                        std::cout << item << std::endl;
+                        os << item << std::endl;
                     }
                     return 6;
                 }
@@ -1369,31 +1431,31 @@ namespace BasicNumeric
                 {
                     if(_analyzeTokenVectorDict.getDict().size()==0)
                     {
-                        std::cout << "no other groups!" << std::endl;
+                        os << "no other groups!" << std::endl;
                     }
                     else if(strspl.size() == 1)
                     {
-                        std::cout << "list all groups:" << std::endl;
+                        os << "list all groups:" << std::endl;
                         for(auto item:_analyzeTokenVectorDict.getDict())
                         {
-                            std::cout << item.name << std::endl;
+                            os << item.name << std::endl;
                         }
                     }
                     else
                     {
-                        std::cout << "list all item of group " << strspl[1] << std::endl;
+                        os << "list all item of group " << strspl[1] << std::endl;
                         if(strspl[1]=="global")
                         {
                             for(auto item:_globaltoken)
                             {
-                                std::cout << item->name << "\t=\t" << item->content->value() << std::endl;
+                                os << item->name << "\t=\t" << item->content->value() << std::endl;
                             }
                         }
                         else if(strspl[1]=="unit")
                         {
                             for(auto item:_unittoken)
                             {
-                                std::cout << item->name << "\t=\t" << item->content->value() << std::endl;
+                                os << item->name << "\t=\t" << item->content->value() << std::endl;
                             }
                         }
                         else
@@ -1405,7 +1467,7 @@ namespace BasicNumeric
                                 {
                                     for(auto item2:item.to)
                                     {
-                                        std::cout << item2->name << "\t=\t" << item2->content->value() << std::endl;
+                                        os << item2->name << "\t=\t" << item2->content->value() << std::endl;
                                     }
                                     found=1;
                                     break;
@@ -1413,7 +1475,7 @@ namespace BasicNumeric
                             }
                             if(!found)
                             {
-                                std::cout << "no group names this!" << std::endl;
+                                os << "no group names this!" << std::endl;
                                 return -7;
                             }
                         }
@@ -1421,23 +1483,163 @@ namespace BasicNumeric
                     }
                     return 7;
                 }
-                std::cout << "invalid command:" << strspl[0] << std::endl;
+                else if(strspl[0]==_cmds[7])
+                {
+                    if(strspl.size()!=2)
+                    {
+                        os << "Wrong use of #judge" << std::endl;
+                        return -8;
+                    }
+                    char result=judge(strspl[1]);
+                    if(result==1)
+                        os << "True" << std::endl;
+                    else if(result==0)
+                        os << "False" << std::endl;
+                    else if(result==-1)
+                        os << "Not same unit" << std::endl;
+                    else
+                        os << "Error in expression" << std::endl;
+                    return 8;
+
+                }
+                else if(strspl[0]==_cmds[8])
+                {
+                    if(strspl.size()!=3)
+                    {
+                        os << "Wrong use of #compare" << std::endl;
+                        return -9;
+                    }
+                    char result;
+                    try
+                    {
+                        result=compare(doCalculate(strspl[1]),doCalculate(strspl[2]));
+                    }
+                    catch(const std::exception &e)
+                    {
+                        os << "Compile Error" << std::endl;
+                        return -9;
+                    }
+                    if(result==1)
+                    {
+                        os << "Greater" << std::endl;
+                    }
+                    else if(result==0)
+                    {
+                        os << "Equal" << std::endl;
+                    }
+                    else if(result==-1)
+                    {
+                        os << "Less" << std::endl;
+                    }
+                    else if(result==-2)
+                    {
+                        os << "Not same unit" << std::endl;
+                    }
+                    return 9;
+                }
+                else if(strspl[0]==_controls[0])
+                {
+                    std::regex func(R"([a-zA-Z][a-zA-Z0-9]*\([a-zA-Z][a-zA-Z0-9]*(,[a-zA-Z][a-zA-Z0-9]*)*\))");
+                    std::regex funcName(R"([a-zA-Z][a-zA-Z0-9]*)");
+                    std::vector<std::string> variables;
+                    std::string name;
+                    if(std::regex_match(strspl[1],func))
+                    {
+                        std::vector<std::smatch*> funcNameMatch=regex_searchOne(funcName,strspl[1]);
+                        name=funcNameMatch[0]->str();
+                        clearSmatch(funcNameMatch);
+                        std::vector<std::string> getVariables = StringTool::strSplit(strspl[1].substr(name.length()+1,strspl[1].length()-name.length()-2),",");
+                        for(auto item : getVariables)
+                        {
+                            if(item!="")
+                                variables.push_back(item);
+                        }
+                    }
+                    else
+                    {
+                        if(!(std::regex_match(strspl[1],funcName)))
+                        {
+                            os << "Wrong use of " << _controls[0] << std::endl;
+                            return -10;
+                        }
+                        int iter;
+                        for(iter=2;iter<strspl.size();iter++)
+                        {
+                            variables.push_back(strspl[iter]);
+                        }
+                        name=strspl[1];
+                    }
+                    DefinedFunction *dfunc=new DefinedFunction(name,variables);
+                    _defFuncIndex=_definedFunctionDict.size();
+                    _definedFunctionDict.push(dfunc);
+                    _defFuncFlag=1;
+                    os << "Start writing function " << strspl[1] << std::endl;
+                    return 10;
+                }
+                os << "invalid command:" << strspl[0] << std::endl;
                 break;
             }
             default:
             {
                 try{
                     //cmd2=calculateFormat(cmd2);
-                    std::cout << COLOR_GREEN << doCalculate(cmd2) << COLOR_NORMAL << std::endl;
+                    os << COLOR_GREEN << doCalculate(cmd2) << COLOR_NORMAL << std::endl;
                 }
                 catch(const std::exception& e)
                 {
-                    std::cout << COLOR_RED << std::string(e.what()) << COLOR_NORMAL <<std::endl;
+                    os << COLOR_RED << std::string(e.what()) << COLOR_NORMAL <<std::endl;
                 }
                 return 2;
             }
         }
         return 1;
+    }
+
+    PhyValue DefinedFunction::doFunc(std::vector<PhyValue> values)
+    {
+        int size;
+        if((size=values.size())!=_variables.size())
+        {
+            std::ostringstream oss;
+            oss << "Wrong use of Function:" << _name;
+            throw compileException(oss.str());
+        }
+        int i;
+        for(i=0;i<size;i++)
+        {
+            std::ostringstream oss;
+            oss << _name << "." << _variables[i];
+            setTokenValue(oss.str(),values[i]);
+        }
+        _firstSearchStack.push_back(_name);
+        std::string calculate="0";
+        doCalculate(calculate);
+        std::ostringstream dummy;
+        try
+        {
+            for(auto item:_cmds.getList())
+            {
+                seperateCmd(item,dummy);
+            }
+        }
+        catch(const compileException& e)
+        {
+            _firstSearchStack.pop_back();
+            throw e;
+        }
+        _firstSearchStack.pop_back();
+        calculate="ans";
+        return doCalculate(calculate);
+    }
+
+    DefinedFunction* DefinedFunctionDict::searchByName(const std::string &name)
+    {
+        for(auto item:_dict)
+        {
+            if(item->getName()==name)
+                return item;
+        }
+        return NULL;
     }
 
     int readScript(std::string filename)
@@ -1457,4 +1659,53 @@ namespace BasicNumeric
         return 0;
     }
 
+    char compare(const PhyValue& a,const PhyValue& b)
+    {
+        if(!(a.isSameUnit(b)))
+        {
+            return -2;
+        }
+        if(a.getValue() > b.getValue())
+        {
+            return 1;
+        }
+        if(a.getValue() == b.getValue())
+        {
+            return 0;
+        }
+        return -1;
+    }
+
+    char judge(std::string& expr)
+    {
+        std::regex cmp(R"((<|(==))|>)");
+        std::vector<std::smatch*> cmpSymbol=regex_searchOne(cmp,expr);
+        if(cmpSymbol.size()==0) return -2;
+        std::string cmpstr=cmpSymbol[0]->str();
+        clearSmatch(cmpSymbol);
+        std::vector<std::string> cmpsplit=StringTool::strSplit(expr,cmpstr);
+        PhyValue a,b;
+        try
+        {
+            a=doCalculate(cmpsplit[0]);
+            b=doCalculate(cmpsplit[1]);
+        }
+        catch(const std::exception &e)
+        {
+            return -2;
+        }
+        char cmpres=compare(a,b);
+        if(cmpres==-2)
+            return -1;
+        if(cmpres==-1)
+            if(cmpstr=="<")
+                return 1;
+        if(cmpres==0)
+            if(cmpstr=="==")
+                return 1;
+        if(cmpres==1)
+            if(cmpstr==">")
+                return 1;
+        return 0;
+    }
 }

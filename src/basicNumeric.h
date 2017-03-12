@@ -124,7 +124,7 @@ namespace BasicNumeric
             double getUnitValue() const;
             std::string str() const;
             unsigned char isNumeric()const{return _unit.isNumeric();}
-            unsigned char isSameUnit(const PhyValue &a) const;
+            unsigned char isSameUnit(const PhyValue &a) const;//same for 1
             PhyValue operator+(const PhyValue& a) const;
             PhyValue operator+() const{return PhyValue(0.0)+(*this);}
             PhyValue operator-(const PhyValue& a) const;
@@ -215,9 +215,75 @@ namespace BasicNumeric
             void addVector(std::vector<AnalyzeToken*> vector,std::string &name);
     };
 
+    class CommandList
+    {
+        private:
+            std::vector<std::string> _cmds;
+        public:
+            inline int size(){return _cmds.size();}
+            inline std::vector<std::string> getList(){return _cmds;}
+            inline std::string getCmd(int index){return _cmds[index];}
+            inline void push(std::string cmd){_cmds.push_back(cmd);}
+    };
+
+    class DefinedFunction
+    {
+        private:
+            std::string _name;
+            std::vector<std::string> _variables;
+            CommandList _cmds;
+        public:
+            DefinedFunction(){};
+            DefinedFunction(const std::string& name,std::vector<std::string> variables);
+            PhyValue doFunc(std::vector<PhyValue> values);
+            inline std::string getName(){return _name;}
+            inline void pushCmd(const std::string& cmd){_cmds.push(cmd);}
+    };
+
+    class DefinedFunctionDict
+    {
+        private:
+            std::vector<DefinedFunction*> _dict;
+        public:
+            DefinedFunctionDict(){};
+            DefinedFunction* searchByName(const std::string& name);
+            inline DefinedFunction* searchByIndex(int index){return _dict[index];}
+            inline std::vector<DefinedFunction*> getDict(){return _dict;}
+            inline void push(DefinedFunction* df){_dict.push_back(df);};
+            inline int size(){return _dict.size();}
+    };
+
     int readScript(std::string filename);
-    int seperateCmd(std::string& cmd);
+    int seperateCmd(std::string& cmd,std::ostream& os=std::cout);
     int initialize();
+    /**
+     * Function compare(PhyValue a,PhyValue b)
+     * Description:
+     *** Function to compare the value of a and b
+     * Input:
+     *** a:the first value
+     *** b:the second value
+     * Output:
+     *** int:if a>b then 1;
+     ***** if a==b then 0;
+     ***** if a<b then -1;
+     ***** if the unit of a and b is different,then -2
+     **/
+    char compare(const PhyValue& a,const PhyValue& b);
+    /**
+     * Function judge(std::string expr)
+     * Description:
+     *** Function to judge the correction of a logical expression
+     *** the symbol of comparation is ">|(==)|<"
+     * Input:
+     *** expr:the logical expression
+     * Output:
+     *** int:if true then 1;
+     ***** if false then 0;
+     ***** if the unit is not same,then -1;
+     ***** if there is error in the expr,then -2;
+     **/
+    char judge(std::string& expr);
 
     PhyValue doCalculate(std::string &cmd);
 }

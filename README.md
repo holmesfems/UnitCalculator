@@ -75,6 +75,18 @@ Add a unit 't' in type of mass:
 `#read filename`
 
 ##Changelog
+* 1.8(future):
+
+    Add #compare command to compare the value of two variables(done)
+
+    Add #judge command to check a logical experession(done)
+
+    Add #defFunc command to define a user-defined function(done)
+
+    Add #if,#elif,#else,#endif command to control thread
+
+    Add #while,#break,#endwhile command to set a loop
+
 * 1.7:
 
     Modified install method,thanks to [jerryjia](https://github.com/jerryjiahaha)
