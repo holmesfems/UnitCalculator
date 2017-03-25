@@ -2,19 +2,23 @@ PhysicsCalculator
 ====
 Calculating values with physics unit
 
-##Description
+#Description
+
 This tool is to calculate values that with various physics units. Enjoy your physics homework with it!
 
-##Download
+#Download
+
 Please download from [Release Page](https://github.com/holmesfems/UnitCalculator/releases)
 
-##Requirement
+#Requirement
+
 * libreadline
 * c++11 (for regex support)
 * cmake (optional, if you want to build with cmake)
 
 
-##Installation
+#Installation
+
 Here are two methods: Calling `make` directly or using [cmake](https://cmake.org/runningcmake/).
 
 Note that we prefer using clang++ than g++
@@ -37,7 +41,8 @@ sudo make install
 
 After installation, you should `cp consts.txt ~/.bnrc`
 
-##Usage
+#Usage
+
 To start up this program,just type `basicNumeric` in your shell
 after you install it.
 
@@ -74,7 +79,8 @@ Add a unit 't' in type of mass:
 
 `#read filename`
 
-##Changelog
+#Changelog
+
 * 1.8(future):
 
     Add #compare command to compare the value of two variables(done)
@@ -129,12 +135,14 @@ Add a unit 't' in type of mass:
 
     Fit the compile at windows by mingw++ compiler
 
-##Licence
+#Licence
+
 Copyright (c) 2016-2017 holmesfems
 
 Released under MIT license
 
 (http://opensource.org/licenses/mit-license.php)
 
-##Author
+#Author
+
 [holmesfems](https://github.com/holmesfems)
