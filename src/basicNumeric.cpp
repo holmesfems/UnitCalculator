@@ -1140,13 +1140,15 @@ namespace BasicNumeric
         std::regex fix3(R"(([^A-Za-z0-9]|^)\.)");
         int iter=0;
         std::vector<std::smatch*> fix3match=regex_searchAll(fix3,res);
+        std::string res2=res;
         for(auto item:fix3match)
         {
             iter+=item->position();
-            res.insert(iter+item->length()-1,"0");
+            res2.insert(iter+item->length()-1,"0");
             iter+=item->length()+1;
         }
         clearSmatch(fix3match);
+        res=res2;
         std::regex fix1(R"((([^\.A-Za-z0-9]|(^|-))(\d+(\.\d+)?)((\$|%)?[A-Za-z][A-Za-z0-9]*)))");
         std::regex numeric(R"(\d+(\.\d+)?)");
         iter=0;
@@ -1158,20 +1160,23 @@ namespace BasicNumeric
             std::string tmp;
             tmp=item->str();
             matches=regex_searchOne(numeric,tmp);
-            res.insert(iter+matches[0]->length()+matches[0]->position(),"*");
+            res2.insert(iter+matches[0]->length()+matches[0]->position(),"*");
             iter+=item->length()+1;
+            clearSmatch(matches);
         }
         clearSmatch(fix1match);
+        res=res2;
         std::regex fix2(R"(\)[\$%A-Za-z0-9\(])");
         iter=0;
         std::vector<std::smatch*> fix2match=regex_searchAll(fix2,res);
         for(auto item:fix2match)
         {
             iter+=item->position();
-            res.insert(iter+1,"*");
+            res2.insert(iter+1,"*");
             iter+=item->length()+1;
         }
         clearSmatch(fix2match);
+        res=res2;
         return res;
     }
 
